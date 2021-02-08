@@ -9,55 +9,61 @@ export default function App() {
   const [apiKey, setApiKey] = useState("befae7d1dc85012afaff2d6c76d7f598");
 
   const handleChange = e => {
-    // handle key presses
     const input = e.target.value;
     setLocation(input);
+    setWeather(null);
   };
 
   const handleSubmit = e => {
-    // handle form submit
     e.preventDefault();
+    setError("");
     setLoading(true);
     getWeather(location);
   };
 
   const getWeather = location => {
-    if (location === "") {
-      console.log("please enter a town");
-    } else {
-      // call Open Weather API
-      console.log(location);
-      fetch(
-        "https://api.openweathermap.org/data/2.5/weather?q=" +
-          location +
-          "&units=metric&appid=" +
-          apiKey
-      )
-        .then(response => response.json())
-        .then(data => setWeather(data)) //works
-        .then(console.log(weather))
-        .catch(err => console.log(err));
-    }
-
-    //   fetch('https://swapi.dev/api/people/1/')
-    // .then(response => response.json())
-    // .then(data => console.log(data));
+    // call Open Weather API
+    fetch(
+      "https://api.openweathermap.org/data/2.5/weather?q=" +
+        location +
+        "&units=metric&appid=" +
+        apiKey
+    )
+      .then(response => {
+        if (response.status !== 200) {
+          setError("Something went wrong. Please doublecheck your input");
+        } else {
+          return response.json();
+        }
+      })
+      .then(data => {
+        setWeather(data); // this is asynchronous, so if you console.log the weather right afterwards it will be null until the data has been updated
+        setLoading(false);
+      })
+      .catch(err => console.log(err)); // this will only trigger if there is a problem with the internet connection, NOT if there is a problem with your request
   };
-
-  const displayWeather = () => {};
 
   return (
     <div>
-      Get Weather Info for your Town
+      <h1>Weather App</h1>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="city">
-          {" "}
-          Enter your location:
-          <input id="city" name="city" onChange={handleChange}></input>
-        </label>
-        <button>Get weather information</button>
+        <label htmlFor="city">Enter your location:</label>
+        <input
+          id="city"
+          name="city"
+          value={location}
+          onChange={handleChange}
+        ></input>
+        <button>Get weather</button>
+        <button>Get forecast</button>
       </form>
-      <div>
+
+      <div className="display">
+        {error && <p>{error}</p>}
+        {/* {error? <p>{error}</p> : ""} */}
+        {loading && <img src="time-92897_1920abc.jpg" />}
+        {/* {loading? <img src="time-92897_1920abc.jpg"/> :""} */}
+
         {weather ? (
           <div>
             <h3>{location}</h3>
