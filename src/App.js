@@ -7,6 +7,7 @@ export default function App() {
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState("");
   const [apiKey, setApiKey] = useState("befae7d1dc85012afaff2d6c76d7f598");
+  const [choice, setChoice] = useState("");
 
   const handleChange = e => {
     const input = e.target.value;
@@ -14,24 +15,26 @@ export default function App() {
     setWeather(null);
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    setError("");
+  const handleClick = event => {
+    setWeather(null);
+    setChoice(event.target.id);
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
     setLoading(true);
+    setError("");
     getWeather(location);
   };
 
   const getWeather = location => {
     // call Open Weather API
     fetch(
-      "https://api.openweathermap.org/data/2.5/weather?q=" +
-        location +
-        "&units=metric&appid=" +
-        apiKey
+      `http://api.openweathermap.org/data/2.5/${choice}?q=${location}&units=metric&appid=${apiKey}`
     )
       .then(response => {
         if (response.status !== 200) {
-          setError("Something went wrong. Please doublecheck your input");
+          setError("Something went wrong. Please doublecheck your input.");
         } else {
           return response.json();
         }
@@ -54,25 +57,35 @@ export default function App() {
           value={location}
           onChange={handleChange}
         ></input>
-        <button>Get weather</button>
-        <button>Get forecast</button>
+        <button id="weather" onClick={event => handleClick(event)}>
+          Current weather
+        </button>
+        <button id="forecast" onClick={event => handleClick(event)}>
+          5-day forecast
+        </button>
       </form>
 
       <div className="display">
-        {error && <p>{error}</p>}
-        {/* {error? <p>{error}</p> : ""} */}
-        {loading && <img src="time-92897_1920abc.jpg" />}
+        {error && <p>{error}</p>} {/* {error? <p>{error}</p> : ""} */}
+        {loading && <img src="time-92897_1920abc.jpg" />}{" "}
         {/* {loading? <img src="time-92897_1920abc.jpg"/> :""} */}
-
         {weather ? (
-          <div>
-            <h3>{location}</h3>
-            <p>Temperature: {weather.main.temp}°C</p>
-            <p>Conditions: {weather.weather[0].description}</p>
-            <p>Windspeeds: {weather.wind.speed}m/sec</p>
-          </div>
+          choice === "weather" ? (
+            <div>
+              <h3>{location}</h3>
+              <p>Temperature: {weather.main.temp}°C</p>
+              <p>Conditions: {weather.weather[0].description}</p>
+              <p>Windspeeds: {weather.wind.speed}m/sec</p>
+            </div>
+          ) : (
+            <div>
+              Forecast for {location}
+              <p>Day: {weather.list[0].dt_txt}</p>
+              <p>Temperature: {weather.list[0].main.temp}°C</p>
+            </div>
+          )
         ) : (
-          <p>No data to show</p>
+          <p>No data to show.</p>
         )}
       </div>
     </div>
